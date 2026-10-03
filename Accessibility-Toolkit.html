@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Accessibility Toolkit for Course Development | Lastinger Center for Learning</title>
+<meta name="description" content="Accessibility Toolkit for Course Development: a practical workflow for building, checking, and testing accessible courses in Articulate Rise 360 and Storyline 360.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,700;1,400&family=Poppins:wght@700&display=swap" rel="stylesheet">
+<style>
+/* Lastinger Center brand palette (2025). UF Orange (#FA4616) is 3.5:1 on white:
+   used only for large text, borders, and graphics, never body text. */
+:root{
+  --ink:#002657; --ink-2:#36454F; --paper:#FFFFFF; --wash:#EAF4FC; --soft:#F5F9FD; --line:#CDD1D3;
+  --blue:#0021A5; --cobalt:#0573E1; --moss:#4D8141; --moss-bg:#EDF2EC; --orange:#FA4616; --yellow:#FFC40D;
+  --build:#0021A5; --check:#4D8141; --test:#FA4616;
+  --req-bg:#0021A5; --req-fg:#FFFFFF; --rec:#0573E1; --cau-bg:#FFC40D; --cau-fg:#002657;
+  --gate-bg:#36454F; --gate-fg:#FFFFFF; --focus:#FA4616;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#EAF4FC; --ink-2:#CDD1D3; --paper:#002657; --wash:#1A3C68; --soft:#0B2F5C; --line:#4D6787;
+    --blue:#82B9F0; --cobalt:#82B9F0; --moss:#A6C0A0; --moss-bg:#1A3C68;
+    --build:#82B9F0; --check:#A6C0A0; --test:#FA4616;
+    --req-bg:#EAF4FC; --req-fg:#002657; --rec:#82B9F0; --gate-bg:#CDD1D3; --gate-fg:#002657; --focus:#FFC40D;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#EAF4FC; --ink-2:#CDD1D3; --paper:#002657; --wash:#1A3C68; --soft:#0B2F5C; --line:#4D6787;
+  --blue:#82B9F0; --cobalt:#82B9F0; --moss:#A6C0A0; --moss-bg:#1A3C68;
+  --build:#82B9F0; --check:#A6C0A0; --test:#FA4616;
+  --req-bg:#EAF4FC; --req-fg:#002657; --rec:#82B9F0; --gate-bg:#CDD1D3; --gate-fg:#002657; --focus:#FFC40D;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--paper);color:var(--ink);font:1.0625rem/1.6 "IBM Plex Sans","Segoe UI",Helvetica,Arial,sans-serif}
+a{color:var(--blue);text-underline-offset:3px}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:3px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+h1,h2,.ig-head h3,.flash-term,.pour b{font-family:"Poppins","Segoe UI",Helvetica,Arial,sans-serif;font-weight:700}
+h1{font-size:clamp(2rem,4vw,2.9rem);line-height:1.1;margin:.3rem 0 .9rem;letter-spacing:-.01em}
+h2{font-size:1.55rem;line-height:1.2;margin:2.6rem 0 1rem}
+h2::after{content:"";display:block;width:4rem;height:5px;background:var(--orange);margin-top:.45rem}
+h3{font-size:1.02rem;font-weight:400;text-transform:uppercase;letter-spacing:.07em;margin:1.8rem 0 .7rem}
+h4{font-size:1.08rem;margin:0}
+p{margin:0 0 1rem}
+.skip{position:absolute;left:-999px;top:0;background:#002657;color:#fff;padding:.6rem 1rem;z-index:50}
+.skip:focus{left:1rem;top:1rem}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Header */
+.site-head{background:#0021A5;color:#fff;position:relative;padding:1.4rem 1.5rem 1.2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.site-head::before{content:"";position:absolute;top:0;left:0;width:min(38%,380px);height:12px;background:linear-gradient(#FA4616,#FA4616) 0 0/100% 4px no-repeat,linear-gradient(#FA4616,#FA4616) 0 8px/66% 3px no-repeat}
+.site-head::after{content:"";position:absolute;bottom:0;right:0;width:min(30%,320px);height:5px;background:#FA4616}
+.org{color:#fff;text-decoration:none;line-height:1.25}
+.org b{display:block;font-family:"Poppins","Segoe UI",sans-serif;font-size:1.15rem}
+.org span{font-size:.88rem;color:#EAF4FC}
+.site-head :focus-visible{outline-color:#FFC40D}
+.menu-btn{display:none;appearance:none;font:inherit;font-weight:700;background:transparent;color:#fff;border:2px solid #fff;border-radius:8px;padding:.4rem .9rem;cursor:pointer}
+
+/* Layout */
+.shell{display:grid;grid-template-columns:260px minmax(0,1fr);max-width:1400px;margin:0 auto}
+aside{background:var(--soft);border-right:1px solid var(--line);padding:1.6rem 1rem 2rem}
+aside nav{position:sticky;top:1rem}
+aside .grp{font-size:.78rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2);margin:1.3rem .6rem .4rem}
+aside .grp:first-child{margin-top:0}
+aside ul{list-style:none;margin:0;padding:0}
+aside a{display:flex;gap:.55rem;align-items:baseline;padding:.42rem .6rem;border-radius:6px;color:var(--ink);text-decoration:none;border-left:4px solid transparent}
+aside a:hover{background:var(--wash)}
+aside a[aria-current="page"]{background:var(--wash);border-left-color:var(--orange);font-weight:700}
+aside a .n{font-size:.85rem;color:var(--ink-2);font-weight:700}
+main{padding:2rem clamp(1.25rem,4vw,3.25rem) 3rem;min-width:0}
+main:focus{outline:none}
+.eyebrow{font-size:.82rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.lede{font-size:1.15rem;max-width:66ch;color:var(--ink-2)}
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .menu-btn{display:inline-block}
+  aside{display:none;border-right:0;border-bottom:1px solid var(--line)}
+  aside.open{display:block}
+  aside nav{position:static}
+}
+
+/* Tags */
+.tag{display:inline-block;font-size:.78rem;font-weight:700;padding:.12rem .55rem;border-radius:999px;line-height:1.45;white-space:nowrap;border:1.5px solid transparent;vertical-align:middle}
+.tag.req{background:var(--req-bg);color:var(--req-fg)}
+.tag.rec{color:var(--rec);border-color:var(--rec)}
+.tag.cau{background:var(--cau-bg);color:var(--cau-fg)}
+.tag.gate{background:var(--gate-bg);color:var(--gate-fg)}
+.tag.ok{background:var(--moss);color:var(--paper)}
+
+/* Cards */
+.grid{display:grid;gap:1rem}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.task{display:block;border:1.5px solid var(--line);border-radius:12px;padding:1.1rem 1.2rem;text-decoration:none;color:var(--ink);background:var(--paper);border-top:5px solid var(--blue)}
+.task:hover{background:var(--soft);border-color:var(--ink)}
+.task .k{font-size:.76rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2)}
+.task b{display:block;font-size:1.12rem;margin:.2rem 0 .25rem}
+.task span.d{color:var(--ink-2);font-size:.97rem}
+.banner{border-left:5px solid var(--orange);background:var(--soft);padding:.9rem 1.1rem;border-radius:0 10px 10px 0;margin:1.25rem 0}
+
+/* Rules */
+.rules{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.rules li{display:grid;grid-template-columns:8.5rem 1fr;gap:1rem;padding:.8rem 0;border-bottom:1px solid var(--line)}
+.rules b{display:block}
+.rules .how{color:var(--ink-2)}
+.rules .sc{font-size:.85rem;color:var(--ink-2)}
+@media (max-width:600px){.rules li{grid-template-columns:1fr;gap:.25rem}}
+
+/* ===== Infographic: Build / Check / Test ===== */
+.ig{margin:1.5rem 0 0;border:2px solid var(--ink);border-radius:18px;overflow:hidden;background:var(--paper)}
+.ig-top{background:#002657;color:#fff;padding:1.1rem 1.4rem;display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem 1.5rem;align-items:baseline}
+.ig-top b{font-family:"Poppins","Segoe UI",sans-serif;font-size:1.35rem}
+.ig-top span{color:#EAF4FC;font-size:.95rem}
+.ig-cols{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr)}
+.ig-col{padding:1.3rem 1.3rem 1.2rem;position:relative;border-right:2px dashed var(--line)}
+.ig-col:last-child{border-right:0}
+.ig-col::before{content:"";position:absolute;top:0;left:0;right:0;height:8px;background:var(--c)}
+.ig-col.build{--c:var(--build)} .ig-col.check{--c:var(--check)} .ig-col.test{--c:var(--test)}
+.ig-col:not(:last-child)::after{content:"";position:absolute;right:-15px;top:3.2rem;width:26px;height:26px;background:var(--paper);border-top:3px solid var(--ink);border-right:3px solid var(--ink);transform:rotate(45deg);z-index:2}
+.ig-head{display:grid;grid-template-columns:auto 1fr;gap:.2rem .9rem;align-items:center;margin-bottom:1rem}
+.ig-icon{grid-row:span 2;width:62px;height:62px;border-radius:16px;display:grid;place-items:center;background:var(--soft);border:2px solid var(--c);color:var(--c)}
+.ig-col.test .ig-icon{color:var(--ink)}
+.ig-icon svg{width:36px;height:36px}
+.ig-num{font-size:.8rem;font-weight:700;letter-spacing:.12em;color:var(--ink-2)}
+.ig-head h3{margin:0;text-transform:none;letter-spacing:0;font-size:1.75rem;line-height:1.05;color:var(--c)}
+.ig-col.test .ig-head h3{color:#FA4616}
+.ig-who{font-size:.9rem;color:var(--ink-2);margin:-.2rem 0 .9rem;font-weight:700}
+.ig-items{list-style:none;margin:0;padding:0;display:grid;gap:.65rem}
+.ig-items li{background:var(--soft);border-radius:10px;padding:.65rem .8rem;border-left:4px solid var(--c)}
+.ig-items b{display:block;font-size:.98rem}
+.ig-items span{font-size:.92rem;color:var(--ink-2)}
+.ig-out{margin:.9rem 0 0;font-size:.9rem;font-weight:700}
+.ig-out::before{content:"→ ";color:var(--ink-2)}
+.ig-foot{margin:0;padding:.9rem 1.4rem;border-top:2px solid var(--ink);font-family:"Poppins","Segoe UI",sans-serif;font-size:1.1rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem}
+.ig-foot span{font-family:"IBM Plex Sans",sans-serif;font-size:.92rem;color:var(--ink-2);font-weight:400}
+@media (max-width:820px){
+  .ig-cols{grid-template-columns:1fr}
+  .ig-col{border-right:0;border-bottom:2px dashed var(--line)}
+  .ig-col:last-child{border-bottom:0}
+  .ig-col:not(:last-child)::after{right:auto;left:50%;top:auto;bottom:-15px;transform:translateX(-50%) rotate(135deg)}
+}
+
+/* ===== Ownership map ===== */
+.own{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
+.own li{display:grid;grid-template-columns:minmax(0,1fr) 2.2rem minmax(0,1fr) minmax(0,1.6fr);gap:.75rem;align-items:center}
+.own .what,.own .who{padding:.6rem .8rem;border-radius:10px;font-weight:700}
+.own .what{background:var(--soft);border:1.5px solid var(--line)}
+.own .who{background:var(--wash);border:1.5px solid var(--blue);color:var(--ink)}
+.own .arr{height:3px;background:var(--ink);position:relative}
+.own .arr::after{content:"";position:absolute;right:-1px;top:-5px;border:6.5px solid transparent;border-left-color:var(--ink);border-right:0}
+.own .tasks{font-size:.94rem;color:var(--ink-2)}
+.own-head{display:grid;grid-template-columns:minmax(0,1fr) 2.2rem minmax(0,1fr) minmax(0,1.6fr);gap:.75rem;font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);margin-bottom:.4rem}
+@media (max-width:760px){.own li,.own-head{grid-template-columns:1fr}.own .arr,.own-head span:nth-child(2){display:none}.own li{padding-bottom:.6rem;border-bottom:1px solid var(--line)}.own-head{display:none}}
+
+/* ===== Decision tree ===== */
+.tree{list-style:none;margin:0;padding:0;max-width:820px;counter-reset:q}
+.tree > li{counter-increment:q;position:relative;padding:0 0 1.2rem 3.2rem}
+.tree > li::before{content:counter(q);position:absolute;left:0;top:0;width:2.3rem;height:2.3rem;border-radius:50%;background:#002657;color:#fff;font-weight:700;display:grid;place-items:center}
+.tree > li:not(:last-child)::after{content:"";position:absolute;left:1.08rem;top:2.4rem;bottom:.1rem;width:3px;background:var(--line)}
+.tree .q{font-weight:700;font-size:1.08rem;padding:.35rem 0 .55rem}
+.tree .br{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.tree .yes,.tree .no{border-radius:10px;padding:.6rem .8rem;font-size:.96rem}
+.tree .yes{border:2px solid var(--blue);background:var(--soft)}
+.tree .no{border:2px dashed var(--line);color:var(--ink-2)}
+.tree .lbl{display:inline-block;font-weight:700;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;margin-right:.35rem;color:var(--ink)}
+.tree .end{border:2px solid var(--moss);background:var(--moss-bg);border-radius:10px;padding:.6rem .8rem;color:var(--ink)}
+@media (max-width:600px){.tree .br{grid-template-columns:1fr}}
+
+/* ===== Contrast specimens ===== */
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.8rem}
+.sw{border-radius:12px;border:1.5px solid var(--line);overflow:hidden;background:var(--paper)}
+.sw .spec{padding:1rem;min-height:84px;display:flex;flex-direction:column;justify-content:center}
+.sw .spec b{font-size:1.25rem;font-family:"Poppins","Segoe UI",sans-serif}
+.sw .spec small{font-size:.9rem}
+.sw .meta{padding:.55rem .8rem;font-size:.88rem;border-top:1.5px solid var(--line);display:flex;flex-direction:column;align-items:flex-start;gap:.35rem}
+.sw .meta .tag{white-space:normal}
+.tag.fail{background:var(--paper);color:var(--ink);border:1.5px dashed var(--ink)}
+#pagetitle:focus{outline:none}
+.sw .meta strong{font-size:1rem}
+
+/* ===== Storyline diagrams ===== */
+.fig{border:1.5px solid var(--line);border-radius:14px;padding:1.2rem;background:var(--soft);margin:0}
+.fig figcaption{font-size:.95rem;color:var(--ink-2);margin-top:.8rem}
+.fig svg{width:100%;height:auto;display:block}
+.svg-ink{fill:none;stroke:var(--ink);stroke-width:2}
+.svg-box{fill:var(--paper);stroke:var(--ink-2);stroke-width:1.5}
+.svg-fill{fill:var(--wash)}
+.svg-txt{fill:var(--ink);font:700 15px "IBM Plex Sans",sans-serif}
+.svg-sub{fill:var(--ink-2);font:13px "IBM Plex Sans",sans-serif}
+.svg-num-bad{fill:#FFC40D}
+.svg-num-good{fill:#0021A5}
+.svg-nt-bad{fill:#002657;font:700 15px "IBM Plex Sans",sans-serif}
+.svg-nt-good{fill:#FFFFFF;font:700 15px "IBM Plex Sans",sans-serif}
+.loop{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:1.6rem;counter-reset:s;position:relative}
+.loop li{counter-increment:s;background:var(--paper);border:2px solid var(--ink);border-radius:12px;padding:.8rem .9rem;position:relative;font-size:.95rem}
+.loop li::before{content:counter(s);display:inline-grid;place-items:center;width:1.7rem;height:1.7rem;border-radius:50%;background:#0021A5;color:#fff;font-weight:700;font-size:.85rem;margin-bottom:.35rem}
+.loop li b{display:block}
+.loop li:not(:last-child)::after{content:"";position:absolute;right:-1.3rem;top:50%;border:8px solid transparent;border-left-color:var(--ink);border-right:0;transform:translateY(-50%)}
+.return{margin:.8rem 6% 0;border:3px solid var(--orange);border-top:0;height:26px;border-radius:0 0 14px 14px;position:relative}
+.return span{position:absolute;left:50%;bottom:-.85rem;transform:translateX(-50%);background:var(--soft);padding:0 .6rem;font-weight:700;font-size:.92rem;white-space:nowrap}
+@media (max-width:760px){.loop{grid-template-columns:1fr 1fr}.loop li:not(:last-child)::after{display:none}.return{display:none}}
+
+/* ===== Release pipeline ===== */
+.pipe{list-style:none;margin:1rem 0 0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:1.4rem 1rem;counter-reset:g}
+.pipe li{counter-increment:g;position:relative;padding-top:2.6rem}
+.pipe li::before{content:counter(g);position:absolute;top:0;left:0;width:2.1rem;height:2.1rem;border-radius:50%;border:3px solid var(--ink);background:var(--paper);display:grid;place-items:center;font-weight:700;z-index:1}
+.pipe li::after{content:"";position:absolute;top:1rem;left:2.1rem;right:-1rem;height:3px;background:var(--line)}
+.pipe li:nth-child(4n)::after,.pipe li:last-child::after{display:none}
+.pipe .box{border-radius:10px;padding:.6rem .75rem;background:var(--soft);border:1.5px solid var(--line);height:100%}
+.pipe .box b{display:block;font-size:.97rem}
+.pipe .box span{font-size:.88rem;color:var(--ink-2)}
+.pipe li.final .box{border:2px solid var(--orange)}
+@media (max-width:760px){.pipe{grid-template-columns:1fr 1fr}.pipe li::after{display:none}}
+
+/* Risks */
+.seg{display:inline-flex;flex-wrap:wrap;border:2px solid var(--ink);border-radius:999px;overflow:hidden;margin:0 0 1.2rem}
+.seg button{appearance:none;font:inherit;font-weight:700;border:0;background:var(--paper);color:var(--ink);padding:.45rem 1rem;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.seg button+button{border-left:2px solid var(--ink)}
+.risks{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1rem}
+.risk{border:1.5px solid var(--line);border-radius:12px;background:var(--paper)}
+.risk[data-lv="cau"]{border-left:8px solid var(--yellow)}
+.risk[data-lv="watch"]{border-left:8px solid var(--cobalt)}
+.risk[data-lv="ok"]{border-left:8px solid var(--moss)}
+.risk summary{list-style:none;cursor:pointer;padding:1rem 1.1rem}
+.risk summary::-webkit-details-marker{display:none}
+.risk .row{display:flex;justify-content:space-between;gap:.5rem;align-items:baseline}
+.risk .tool{font-size:.85rem;color:var(--ink-2)}
+.risk summary p{margin:.35rem 0 0;color:var(--ink-2);font-size:.95rem}
+.risk .more{display:inline-block;margin-top:.45rem;font-weight:700;font-size:.9rem;color:var(--blue)}
+.risk[open] .more::after{content:" (hide)"}
+.risk dl{margin:0;padding:0 1.1rem 1rem}
+.risk dt{font-weight:700;font-size:.92rem;margin-top:.5rem}
+.risk dd{margin:.1rem 0 0}
+
+/* Checklist */
+.progress{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+.bar{flex:1;min-width:200px;height:14px;background:var(--wash);border:1.5px solid var(--ink);border-radius:999px;overflow:hidden}
+.bar>div{height:100%;width:0;background:var(--moss);transition:width .25s}
+.btn{appearance:none;font:inherit;font-weight:700;border:2px solid var(--ink);background:var(--paper);color:var(--ink);padding:.45rem .9rem;border-radius:8px;cursor:pointer}
+.btn:hover{background:var(--wash)}
+.checks{list-style:none;margin:0;padding:0}
+.checks li{border-bottom:1px solid var(--line)}
+.checks label{display:grid;grid-template-columns:1.6rem 1fr auto;gap:.75rem;padding:.7rem .2rem;cursor:pointer}
+.checks input{width:1.3rem;height:1.3rem;margin-top:.2rem;accent-color:#4D8141}
+.checks input:checked+span{text-decoration:line-through;color:var(--ink-2)}
+.done{display:none;margin-top:1rem;padding:1rem;border:2px solid var(--moss);background:var(--moss-bg);border-radius:10px;font-weight:700}
+.done.show{display:block}
+
+/* Protocols */
+.proto{border:2px solid var(--ink);border-radius:14px;padding:1.1rem 1.2rem}
+.proto h4{font-size:1.12rem}
+.proto .who{font-size:.9rem;color:var(--ink-2);margin:.3rem 0 .6rem}
+.proto ol{margin:0;padding-left:1.2rem}
+.proto li{margin:.35rem 0}
+.proto .pass{margin:.8rem 0 0;padding-top:.6rem;border-top:1px dashed var(--line);font-size:.95rem}
+kbd{font-family:inherit;font-size:.85em;font-weight:700;border:1.5px solid var(--ink-2);border-bottom-width:3px;border-radius:5px;padding:0 .35rem;background:var(--paper);white-space:nowrap}
+
+/* Fix */
+.search{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-bottom:1.2rem}
+.search label{font-weight:700}
+.search input{font:inherit;padding:.5rem .8rem;border:2px solid var(--ink);border-radius:8px;min-width:min(100%,320px);background:var(--paper);color:var(--ink)}
+.fix{border:1.5px solid var(--line);border-radius:12px;padding:1rem 1.1rem}
+.fix h4{margin-bottom:.4rem}
+.fix .why{color:var(--ink-2);font-size:.95rem;margin-bottom:.6rem}
+.fix .do{margin:0;padding:.5rem .75rem;background:var(--moss-bg);border-radius:8px;font-size:.97rem}
+
+/* Quick reference */
+.qr{border:2px solid var(--ink);border-radius:16px;overflow:hidden}
+.qr-cols{display:grid;grid-template-columns:repeat(3,1fr)}
+.qr-col{padding:1rem 1.1rem;border-right:2px dashed var(--line)}
+.qr-col:last-child{border-right:0}
+.qr-col h3{margin:0 0 .6rem;text-transform:none;letter-spacing:0;font:700 1.35rem "Poppins","Segoe UI",sans-serif;border-bottom:6px solid var(--c);padding-bottom:.3rem}
+.qr-col ul{margin:0;padding-left:1.1rem}
+.qr-col li{margin:.3rem 0;font-size:.96rem}
+.qr-strip{display:flex;flex-wrap:wrap;gap:.6rem 1.6rem;padding:.8rem 1.1rem;border-top:2px solid var(--ink);background:var(--soft);font-size:.95rem}
+@media (max-width:820px){.qr-cols{grid-template-columns:1fr}.qr-col{border-right:0;border-bottom:2px dashed var(--line)}}
+
+/* Learn */
+.pour{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.8rem}
+.pour div{border:2px solid var(--ink);border-radius:12px;padding:1rem;position:relative;overflow:hidden}
+.pour .big{position:absolute;right:.6rem;top:-.4rem;font:700 3.6rem "Poppins",sans-serif;color:var(--wash);z-index:0}
+.pour b,.pour span{position:relative;z-index:1}
+.pour b{display:block;font-size:1.12rem}
+.pour span{display:block;color:var(--ink-2);font-size:.95rem}
+.flash{max-width:620px}
+.card{appearance:none;font:inherit;color:var(--ink);width:100%;border:2px solid var(--ink);border-radius:16px;min-height:200px;padding:1.8rem;display:grid;place-items:center;text-align:center;cursor:pointer;background:var(--wash)}
+.card[aria-pressed="true"]{background:var(--paper)}
+.flash-term{font-size:1.8rem}
+.card .hint{display:block;margin-top:.7rem;font-size:.88rem;color:var(--ink-2)}
+.flashnav{display:flex;justify-content:space-between;align-items:center;gap:.6rem;margin-top:.7rem}
+.gloss{columns:2 320px;column-gap:2.4rem;margin:0}
+.gloss div{break-inside:avoid;padding:.5rem 0;border-bottom:1px solid var(--line)}
+.gloss dt{font-weight:700}
+.gloss dd{margin:.1rem 0 0;color:var(--ink-2)}
+
+/* Resources */
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{text-align:left;padding:.5rem .6rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--soft)}
+footer{border-top:1px solid var(--line);padding:1.4rem clamp(1.25rem,4vw,3.25rem) 2.5rem;color:var(--ink-2);font-size:.9rem;max-width:1400px;margin:0 auto}
+
+@media print{
+  .site-head,aside,.skip,.menu-btn,.noprint,footer{display:none!important}
+  .shell{display:block}
+  main{padding:0}
+  body{font-size:11pt}
+  .qr{break-inside:avoid}
+}
+/* ===== Guide map ===== */
+.gmap{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:1rem}
+.gcol{border:2px solid var(--ink);border-radius:14px;overflow:hidden;background:var(--paper)}
+.gcol h3{margin:0;padding:.7rem .9rem;font:700 1.08rem "Poppins","Segoe UI",sans-serif;text-transform:none;letter-spacing:0;background:#002657;color:#fff}
+.gcol h3 span{display:block;font:400 .85rem "IBM Plex Sans",sans-serif;color:#EAF4FC;margin-top:.1rem}
+.gcol ul{list-style:none;margin:0;padding:.5rem}
+.gcol li a{display:block;padding:.55rem .6rem;border-radius:8px;text-decoration:none;color:var(--ink);border-left:5px solid var(--c,var(--line))}
+.gcol li a:hover{background:var(--wash)}
+.gcol li a b{display:block}
+.gcol li a span{font-size:.9rem;color:var(--ink-2)}
+.gcol li+li{margin-top:.35rem}
+.gmap-note{margin:.9rem 0 0;font-size:.95rem;color:var(--ink-2)}
+@media (max-width:980px){.gmap{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.gmap{grid-template-columns:1fr}}
+.brand{display:flex;align-items:center;gap:.6rem 1.1rem;flex-wrap:wrap}
+.org{display:block;padding:.35rem 0}
+.org img{display:block;height:44px;width:auto}
+.site-name{color:#EAF4FC;font-size:.95rem;padding-left:1.1rem;border-left:1px solid rgba(234,244,252,.55)}
+@media (max-width:600px){.org img{height:34px}.site-name{border-left:0;padding-left:0;font-size:.88rem;flex-basis:100%}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-head">
+  <div class="brand"><a class="org" href="#/"><img src="data:image/png;base64,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" alt="Lastinger Center, University of Florida. Go to toolkit home" width="277" height="44"></a><span class="site-name">Accessibility Toolkit for Course Development</span></div>
+  <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidebar">Menu</button>
+</header>
+
+<div class="shell">
+  <aside id="sidebar">
+    <nav aria-label="Toolkit">
+      <p class="grp">Start</p>
+      <ul>
+        <li><a href="#/">Home</a></li>
+        <li><a href="#/start">Start here</a></li>
+      </ul>
+      <p class="grp">Workflow</p>
+      <ul>
+        <li><a href="#/build"><span class="n">01</span>Build it</a></li>
+        <li><a href="#/check"><span class="n">02</span>Check it</a></li>
+        <li><a href="#/test"><span class="n">03</span>Test it</a></li>
+      </ul>
+      <p class="grp">By tool</p>
+      <ul>
+        <li><a href="#/rise">Rise 360 guide</a></li>
+        <li><a href="#/storyline">Storyline 360 guide</a></li>
+        <li><a href="#/media">Video, audio &amp; animation</a></li>
+      </ul>
+      <p class="grp">Quick help</p>
+      <ul>
+        <li><a href="#/risks">High-risk interactions</a></li>
+        <li><a href="#/fix">Find a fix</a></li>
+        <li><a href="#/quick">Quick reference</a></li>
+      </ul>
+      <p class="grp">Learn</p>
+      <ul>
+        <li><a href="#/learn">Basics &amp; vocabulary</a></li>
+        <li><a href="#/resources">Resources &amp; sources</a></li>
+      </ul>
+    </nav>
+  </aside>
+  <main id="main" tabindex="-1"></main>
+</div>
+
+<footer>
+  Created by the Lastinger Center for Learning, University of Florida, to help every learner take part. Last verified October 2026 against W3C and Articulate's published accessibility documentation. This is practical guidance, not legal advice. Not affiliated with or endorsed by Articulate.
+</footer>
+
+<script>
+/* ---------------- Helpers ---------------- */
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const TAGS={req:'Required',rec:'Recommended',cau:'Caution',gate:'Release gate'};
+const tag=k=>'<span class="tag '+k+'">'+TAGS[k]+'</span>';
+const ICON={
+ build:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8 20 7.3v9.4l-8 4.5-8-4.5V7.3z"/><path d="M12 12 20 7.3M12 12v9.2M12 12 4 7.3"/></svg>',
+ check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2.8h6V4M8.5 12.8l2.4 2.4 4.6-5"/></svg>',
+ test:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6 10h.01M9.5 10h.01M13 10h.01M16.5 10h.01M7 14h10"/></svg>'
+};
+const page=(eyebrow,title,lede)=>'<p class="eyebrow">'+eyebrow+'</p><h1 id="pagetitle" tabindex="-1">'+title+'</h1>'+(lede?'<p class="lede">'+lede+'</p>':'');
+const rulesList=items=>'<ul class="rules">'+items.map(i=>'<li><span>'+tag(i[0])+'</span><div><b>'+esc(i[1])+'</b><span class="how">'+esc(i[2])+'</span> <span class="sc">('+esc(i[3])+')</span></div></li>').join('')+'</ul>';
+
+/* ---------------- Content ---------------- */
+const ROLES={
+ "SME":{do:["Write in plain language: short sentences, one idea per paragraph.","Spell out every acronym the first time.","Outline with real heading levels so the structure carries into the build.","In video scripts, say aloud anything essential that appears on screen.","Never write instructions that depend only on color or position."],go:[["build","Build it"],["learn","Basics & vocabulary"]]},
+ "Instructional designer":{do:["Choose accessible interactions at storyboard stage; never drag-and-drop only.","Set heading levels in order (H2 to H5 in Rise).","Write link and button text that names the destination.","Put keyboard instructions before interactions.","Write feedback that says why and what to do next."],go:[["risks","High-risk interactions"],["check","Check it"]]},
+ "Interactive media designer":{do:["Set focus order on every Storyline slide and layer.","Add Set Focus triggers and block base-layer clicks on layers.","Label every button, state, and slider for screen readers.","Make every control work with Tab, Enter, Space, and arrows.","Run the Storyline Accessibility Checker before QA."],go:[["storyline","Storyline 360 guide"],["risks","High-risk interactions"]]},
+ "Graphic designer":{do:["Meet 4.5:1 contrast for text and 3:1 for icons and buttons.","Never use color alone; add labels, icons, or patterns.","Use real text, never images of text.","Write alt text that states the image's purpose.","Represent people inclusively across ages, abilities, races, and genders."],go:[["build","Build it"],["quick","Quick reference"]]},
+ "Video producer":{do:["Upload synchronized, proofread captions for every video.","Provide a transcript next to every audio and video file.","Narrate or audio-describe essential visuals.","No autoplay; learners start media themselves.","Nothing flashes more than three times per second."],go:[["media","Video, audio & animation"],["fix","Find a fix"]]},
+ "Peer reviewer":{do:["Test with the keyboard only; mouse away.","Run a screen reader pass with NVDA or VoiceOver.","Zoom to 400% and check reflow.","Run the reviewer check for every high-risk interaction.","Record each result in the release record."],go:[["test","Test it"],["risks","High-risk interactions"]]},
+ "LMS team":{do:["Upload to staging and repeat the keyboard test there.","Run a short screen reader pass inside the LMS.","Test on one iOS and one Android device.","Confirm the course language survives publishing.","Check login and LMS controls (Exit, Next) by keyboard."],go:[["test","Test it"]]},
+ "Project lead":{do:["Confirm high-risk interactions were decided at storyboard.","Confirm every release gate is recorded.","Require an alternate version for anything that can't be made accessible.","Sign off only when all gates pass.","Schedule a re-check after major tool updates."],go:[["test","Test it"],["resources","Resources & sources"]]}
+};
+const BUILD={
+ core:[
+  ["req","Text contrast 4.5:1; large text 3:1","Large text is 18 pt, or 14 pt bold. Check with a contrast checker.","SC 1.4.3"],
+  ["req","Icons, buttons, and focus outlines 3:1","Includes chart lines and Labeled Graphic markers.","SC 1.4.11"],
+  ["req","Never use color alone","Add a text label, icon, or pattern to every color cue.","SC 1.4.1"],
+  ["req","Alt text states the image's purpose","Decorative images are hidden from screen readers. See the decision tree below.","SC 1.1.1"],
+  ["req","Real headings that match the hierarchy","Never fake a heading with bold text.","SC 1.3.1, 2.4.6"],
+  ["rec","No skipped heading levels","Don't jump from H2 to H4.","Best practice"],
+  ["req","Links name their destination","\u201cDownload the policy PDF,\u201d not \u201cClick here\u201d or a bare URL.","SC 2.4.4"],
+  ["req","Buttons are named clearly and consistently","The same action uses the same label everywhere.","SC 2.4.6, 3.2.4, 4.1.2"],
+  ["req","Tables for data only, with headers","Use columns or blocks for layout.","SC 1.3.1"],
+  ["req","Real text, not images of text","Real text can be read aloud, resized, and searched.","SC 1.4.5"],
+  ["req","Everything works by keyboard, with no traps","Tab, Shift+Tab, Enter, Space, arrows, Esc.","SC 2.1.1, 2.1.2"],
+  ["req","Learners control the pace","No auto-advance or timers, unless learners can turn them off or extend them.","SC 2.2.1"],
+  ["req","Course language is set","So screen readers pronounce content correctly.","SC 3.1.1"],
+  ["req","Instructions don't rely on shape, color, or position","Not \u201cclick the green circle on the right.\u201d","SC 1.3.3"],
+  ["rec","Plain language","Understood on first read. Define acronyms.","Best practice"],
+  ["rec","Keyboard instructions at the start","e.g., \u201cPress Tab to move to the next item.\u201d","Best practice"]],
+ rise:[
+  ["req","Set the course language","In course settings, under labels. Confirm pronunciation in the published course.","SC 3.1.1"],
+  ["req","Set block headings to H2 through H5","Lesson titles are H1 automatically.","SC 1.3.1"],
+  ["cau","Keep the lesson header on","Rise can't add an H1 when the lesson header is disabled.","Rise maturity plan"],
+  ["cau","Check auto-assigned headings","Some blocks fix their level; YouTube or Vimeo embeds added by URL can create two H2s in a row.","UCOP testing"],
+  ["req","Alt text on informative images; empty field for decorative","Review AI-drafted alt text before accepting it.","SC 1.1.1"],
+  ["req","Check theme and marker contrast","Theme colors, text over images, Labeled Graphic markers.","SC 1.4.3, 1.4.11"],
+  ["req","Turn off auto-advance and quiz timers","Learners move on when they choose.","SC 2.2.1"],
+  ["cau","Use Button blocks between lessons","Continue blocks have been reported to disrupt screen reader focus. Re-test in your version.","UW\u2013Madison, 2025"],
+  ["req","Fill in Scene Descriptions","Every scene, dialogue, and ending in Scenario blocks.","SC 1.1.1"],
+  ["rec","Explain knowledge check feedback","Say why, and what to do next.","Best practice"]],
+ sl:[
+  ["req","Set the course language","Player properties, text labels. Confirm pronunciation in the published course.","SC 3.1.1"],
+  ["req","Use heading text styles","Slide title is Heading 1; sub-sections use lower levels.","SC 1.3.1"],
+  ["req","Set focus order on every slide and layer","Top to bottom, left to right, matching the reading order. See the diagram below.","SC 2.4.3, 1.3.2"],
+  ["req","Hide decorative objects","Use the timeline accessibility toggle (added April 2026).","SC 1.1.1"],
+  ["req","Name every button, state, and slider","Screen readers announce these names.","SC 4.1.2"],
+  ["req","Slides advance by user","No timed advances or timeline-triggered jumps.","SC 2.2.1"],
+  ["req","No hover-only information","Use layers opened by click or Enter instead.","SC 2.1.1, 1.4.13"],
+  ["req","Manage focus on layers","Move focus into the layer, block the base layer, and return focus on close. See the focus loop below.","SC 2.4.3"],
+  ["req","Feedback layers receive focus","Say what was wrong and how to fix it.","SC 3.3.1"],
+  ["cau","Hide other layers when one opens","Inactive layers can still be read by screen readers (open Articulate gap).","Storyline maturity plan"],
+  ["cau","Show changes on a layer that gets focus","Storyline doesn't reliably announce content that changes in place.","SC 4.1.3"],
+  ["cau","Replace drag-and-drop","Not keyboard accessible. Use buttons or dropdowns instead.","SC 2.1.1"],
+  ["gate","Run the Accessibility Checker","Resolve every flagged item before QA. It can't judge focus order or alt text quality.","Release gate"]],
+ media:[
+  ["req","Captions on all prerecorded video and slide audio","Synchronized caption files, proofread word for word.","SC 1.2.2"],
+  ["req","Transcript for every audio-only file","Placed next to the audio.","SC 1.2.1"],
+  ["req","Describe essential visuals","Best: narrate them in the script. Otherwise, add audio description. A transcript alone doesn't meet this.","SC 1.2.5"],
+  ["rec","Transcript for every video","Include important visual context. In Rise, put it in an accordion right below the video.","Best practice"],
+  ["req","No autoplay","Learners start media themselves.","SC 1.4.2, 2.2.2"],
+  ["req","Animations can pause, or end within 5 seconds","Storyline can't pause GIFs; use a short video instead.","SC 2.2.2"],
+  ["req","No flashing more than 3 times per second","Check motion graphics and screen recordings.","SC 2.3.1"]]
+};
+const RISKS=[
+ {n:"Drag-and-drop",tool:"Storyline",lv:"cau",risk:"Not keyboard accessible, per Articulate's current conformance report.",act:"Build an equivalent with buttons or dropdowns, or replace the interaction.",chk:"Complete the activity with the keyboard only."},
+ {n:"Hotspots",tool:"Storyline",lv:"cau",risk:"Invisible to keyboard users; the selector animation can't be paused.",act:"Don't use for critical content. Use transparent buttons with alt text, or visible markers.",chk:"Every clickable area shows a focus outline."},
+ {n:"Timed activities",tool:"Storyline",lv:"cau",risk:"Excludes learners who need more time.",act:"Avoid time limits. If unavoidable, let learners turn off or extend the timer, and announce it.",chk:"Learner can pause or extend."},
+ {n:"Layers",tool:"Storyline",lv:"watch",risk:"Focus stays on the base layer; inactive layers can be read.",act:"Set Focus trigger, block base-layer clicks, hide other layers.",chk:"Focus enters the layer and returns to the trigger on close."},
+ {n:"Lightboxes",tool:"Storyline",lv:"watch",risk:"Learners lose their place when a slide opens on top.",act:"Move focus in, keep it there, return it to the trigger on close.",chk:"Focus returns to the trigger on close."},
+ {n:"Sliders and dials",tool:"Storyline",lv:"watch",risk:"Values may have no meaningful label.",act:"Label positions: \u201cStep 1 of 5,\u201d \u201cVolume: 25%.\u201d",chk:"Arrow keys operate it; each value is announced."},
+ {n:"Web objects",tool:"Storyline",lv:"watch",risk:"Often land at the end of the focus order and can trap focus.",act:"Check the published tab order; warn when links open new windows.",chk:"Focus moves in and out without getting stuck."},
+ {n:"Scenario",tool:"Rise",lv:"watch",risk:"Backgrounds and characters are visual only.",act:"Fill in the Scene Description for every scene, dialogue, and ending.",chk:"Screen reader announces each scene's context in order."},
+ {n:"Labeled Graphic",tool:"Rise",lv:"watch",risk:"Default marker contrast may fail; zoom on click adds tab stops.",act:"Pick high-contrast marker colors; set heading levels in marker content; turn off zoom on click unless it reveals essential detail.",chk:"Markers are read in a logical order."},
+ {n:"Carousel",tool:"Rise",lv:"watch",risk:"Learners may not know when slides change.",act:"Add an instruction line, plus alt text and a caption for every slide.",chk:"Focus moves through every slide."},
+ {n:"Matching knowledge check",tool:"Rise",lv:"watch",risk:"High cognitive load; keyboard use isn't obvious.",act:"State the keyboard method: \u201cUse the Up and Down arrows to choose a match.\u201d",chk:"Focus moves predictably between pairs."},
+ {n:"Continue block",tool:"Rise",lv:"cau",risk:"Reported to disrupt screen reader focus when moving to the next lesson.",act:"Use Button blocks to move between lessons.",chk:"Focus lands at the top of the new lesson."},
+ {n:"Sorting Activity",tool:"Rise",lv:"ok",risk:"Now keyboard and screen reader accessible (February 2026 update).",act:"Use clear category labels and a short instruction above it. Don't rely on color.",chk:"Sort every item with the keyboard; moves are announced."},
+ {n:"Video with visual-only content",tool:"Both",lv:"watch",risk:"Essential visuals are missed.",act:"Narrate them in the script, or add audio description.",chk:"All information is available as audio or text."}
+];
+const LV={cau:'<span class="tag cau">Caution</span>',watch:'<span class="tag rec">Watch</span>',ok:'<span class="tag ok">Improved</span>'};
+const CL=[
+ ["both","req","Course language is set."],["both","req","Headings run in order, with none skipped."],
+ ["both","req","Every informative image has purpose-based alt text; AI drafts reviewed."],["both","req","Every decorative image is hidden from screen readers."],
+ ["both","req","Text contrast 4.5:1; icons, buttons, and large text 3:1."],["both","req","No information is conveyed by color alone."],
+ ["both","req","Every video has synchronized, proofread captions; every audio file has a transcript."],["both","req","Essential visuals in video are narrated or audio-described."],
+ ["both","req","Every link names its destination."],["both","req","Nothing auto-advances and there are no time limits."],
+ ["both","gate","I tabbed through the whole module once with the keyboard only."],
+ ["rise","req","Lesson headers are on; block headings set to H2 through H5."],["rise","req","Scenario blocks have Scene Descriptions."],
+ ["rise","req","Labeled Graphic markers pass contrast."],["rise","rec","Transcripts sit right below their video or audio."],
+ ["rise","cau","Lessons are linked with Button blocks, not Continue blocks."],
+ ["sl","req","Focus order is set on every slide and every layer."],["sl","req","Every layer moves focus in, blocks the base layer, and returns focus on close."],
+ ["sl","req","No critical information appears only on hover."],["sl","req","Drag-and-drop has a keyboard-operable alternative."],
+ ["sl","req","Every button, state, and slider has a descriptive name."],["sl","gate","The Accessibility Checker shows no unresolved issues."]
+];
+const PROTOS=[
+ {n:"Keyboard only",who:"Peer reviewer",steps:["Click once at the top of the preview, then put the mouse away.","<kbd>Tab</kbd> forward and <kbd>Shift</kbd>+<kbd>Tab</kbd> back through every element.","<kbd>Enter</kbd> or <kbd>Space</kbd> activates; arrows operate choices; <kbd>Esc</kbd> closes dialogs."],pass:"Focus outline always visible, logical order, no traps."},
+ {n:"Screen reader",who:"Peer reviewer",steps:["Turn on NVDA (Windows, free) or VoiceOver (<kbd>Cmd</kbd>+<kbd>F5</kbd> on Mac).","Jump by headings: <kbd>H</kbd> in NVDA, <kbd>VO</kbd>+<kbd>Cmd</kbd>+<kbd>H</kbd> in VoiceOver.","Listen to every image, button, layer, and feedback message."],pass:"Correct heading levels; alt text conveys purpose; decorative images skipped; layers announced."},
+ {n:"Zoom to 400%",who:"Peer reviewer",steps:["Zoom to 200%, then 400% (<kbd>Ctrl</kbd>+<kbd>+</kbd>, or <kbd>Cmd</kbd>+<kbd>+</kbd> on Mac).","Rise: watch for clipping and sideways scrolling.","Storyline: confirm all controls stay usable."],pass:"Nothing clipped; no horizontal scroll in Rise."},
+ {n:"High-risk interactions",who:"Peer reviewer",steps:["List every high-risk interaction in the module.","Run its reviewer check from the High-risk interactions page."],pass:"Every check passes, or an alternate version exists."},
+ {n:"LMS and mobile",who:"LMS team",steps:["Upload to staging; repeat the keyboard test, including Exit and Next.","Run a short screen reader pass on one lesson.","Test on one iOS and one Android device: zoom, rotation, captions, menu."],pass:"Works the same in the LMS as in preview."}
+];
+const GATES=[["Storyboard review","ID"],["Media ready","Video producer"],["Author self-check","Author"],["Storyline Accessibility Checker","Interactive media designer"],["Peer tests","Peer reviewer"],["LMS and mobile test","LMS team"],["Alternate version, if needed","Project lead"],["Release decision","Project lead"]];
+const FIX=[
+ ["Missing or literal alt text","Screen reader users miss the image's point.","Describe the purpose, not the pixels. Skip \u201cImage of.\u201d"],
+ ["Decorative images read aloud","Extra chatter distracts screen reader users.","Rise: leave alt text empty. Storyline: use the timeline accessibility toggle."],
+ ["Images of text","Text can't be read aloud, resized, or searched.","Replace with real text."],
+ ["Bold text used as headings","Learners can't navigate by headings.","Use heading blocks (Rise) or heading styles (Storyline), in order."],
+ ["\u201cClick here\u201d links","Meaningless when read out of context.","Name the destination: \u201cRead the policy statement.\u201d"],
+ ["Vague or icon-only buttons","Learners can't predict what happens.","Give each button a name that states the outcome."],
+ ["Low contrast","Unreadable for low-vision learners.","4.5:1 for text, 3:1 for icons and buttons."],
+ ["Color-only meaning","Lost for learners with color vision deficiency.","Add a label, icon, or pattern."],
+ ["Missing captions or transcripts","Excludes d/Deaf learners and sound-off settings.","Add captions and a transcript next to the media."],
+ ["Mouse-only interaction","Keyboard users are blocked.","Rebuild with buttons, or provide an alternative."],
+ ["Storyline reads in the wrong order","Default focus order follows creation order.","Set focus order on every slide and layer."],
+ ["Layer opens but nothing is announced","Focus stays on the base layer.","Add a Set Focus trigger and block base-layer clicks."],
+ ["Tables used for layout","Screen readers announce false relationships.","Use columns or other blocks for layout."],
+ ["Learners stuck in an interaction","No instructions were given.","Put keyboard instructions right before it."],
+ ["Focus trapped in a web object","Keyboard users can't leave.","Test focus in and out; fix the tab order."],
+ ["Works in preview, fails in the LMS","LMS-specific barriers were never tested.","Test in staging and on mobile."],
+ ["Checker shows zero issues, course still fails","Automated checks can't judge meaning or usability.","Always pair the checker with manual tests."]
+];
+const G=[
+ ["Accessibility (a11y)","Making digital experiences work for everyone, regardless of physical or cognitive ability."],
+ ["Accessibility checker","An automated tool that scans content for likely barriers. Storyline has one built in."],
+ ["Accessibility tree","The version of the page the browser builds for assistive technology to read."],
+ ["Accessible alternative","Another way to complete an activity, such as buttons instead of drag-and-drop."],
+ ["Alt text","A short description of an image's instructional purpose."],
+ ["Audio description","Narration that describes essential visuals the main audio doesn't cover."],
+ ["Button label","The name that tells a learner exactly what a button does."],
+ ["Closed captions","Synchronized text of speech and meaningful sounds that learners can turn on or off."],
+ ["Cognitive load","The mental effort working memory needs to process and retain information."],
+ ["Color contrast","The brightness difference between text or graphics and their background, as a ratio."],
+ ["Color-only meaning","Using color as the only cue. Always add text or an icon."],
+ ["Decorative image","An image used only for style; it adds no information."],
+ ["Focus indicator","The visible outline that shows which element the keyboard is on."],
+ ["Focus order","The sequence the keyboard and screen readers follow through a slide or page."],
+ ["Heading structure","The ordered hierarchy of headings that lets learners scan and navigate."],
+ ["Image of text","A picture containing words. Use real text instead."],
+ ["Keyboard trap","A spot where keyboard focus gets in but can't get out."],
+ ["Link text","The clickable words of a link. They should name the destination."],
+ ["Peer reviewer","A colleague who didn\u2019t build the module and tests it with fresh eyes before release."],
+ ["Meaningful sequence","An order that still makes sense when the visual layout is removed."],
+ ["Plain language","Writing the audience understands the first time they read or hear it."],
+ ["POUR","WCAG's four principles: Perceivable, Operable, Understandable, Robust."],
+ ["Release gate","A required process step that must be completed before a course moves on."],
+ ["Screen reader","Software that reads screen content aloud or to braille, used mainly by blind and low-vision learners."],
+ ["Semantic structure","Marking content by meaning (headings, lists, tables) rather than looks."],
+ ["Transcript","A full text version of audio or video, available outside the player."],
+ ["UDL","Universal Design for Learning: flexible design with multiple means of engagement, representation, and expression."],
+ ["WCAG","Web Content Accessibility Guidelines. Most institutions target 2.1 or 2.2 Level AA."]
+];
+const SRC=[
+ ["Storyline drag-and-drop is not keyboard accessible","Confirmed","Storyline 360 conformance report","https://www.articulate.com/about/accessibility/storyline-360-accessibility-conformance-report-vpat/"],
+ ["Storyline timeline accessibility toggle; checker; inactive-layer gap","Confirmed","Storyline 360 maturity plan","https://www.articulate.com/about/accessibility/storyline-360-accessibility-maturity-plan/"],
+ ["What the Storyline checker covers","Confirmed","Checker covered issues","https://community.articulate.com/kb/user-guides/storyline-360-accessibility-checker-covered-issues/1227807"],
+ ["Rise Sorting Activity accessible; Labeled Graphic headings; no H1 without lesson header","Confirmed","Rise 360 maturity plan","https://www.articulate.com/about/accessibility/rise-360-accessibility-maturity-plan/"],
+ ["Some Rise heading levels are auto-assigned","Confirmed","UCOP Rise best practices","https://www.ucop.edu/electronic-accessibility/standards-and-best-practices/rise.html"],
+ ["Rise Continue blocks disrupt screen reader focus","Third-party, 2025; re-test","UW\u2013Madison accessibility KB","https://kb.wisc.edu/accessibility/149837"],
+ ["Storyline heading style range; exact layer option wording; settings menu paths","Check in your installed version","\u2014",""]
+];
+
+/* ---------------- Diagrams ---------------- */
+function infographic(){
+ const col=(k,num,verb,who,items,out)=>'<li class="ig-col '+k+'"><div class="ig-head"><div class="ig-icon">'+ICON[k]+'</div><span class="ig-num">STEP '+num+'</span><h3><span>'+verb+'</span></h3></div><p class="ig-who">'+who+'</p><ul class="ig-items">'+items.map(i=>'<li><b>'+i[0]+'</b><span>'+i[1]+'</span></li>').join('')+'</ul><p class="ig-out">'+out+'</p></li>';
+ return '<figure class="ig" aria-labelledby="igcap"><div class="ig-top"><b id="igcap">Build it. Check it. Test it.</b><span>Accessibility works best when it’s part of the plan from day one.</span></div><ol class="ig-cols">'+
+  col('build','01','Build it','Authors and interactive media designers',[["Structure & navigation","Real headings, descriptive links and buttons"],["Media","Alt text, captions, transcripts, described visuals"],["Interactions","Choose the simplest one that works with a keyboard"]],'A built module')+
+  col('check','02','Check it','The author, on their own module',[["Visual","Contrast passes; no color-only meaning"],["Structure","Focus order, layers, and triggers in logical order"],["Content","Tables, media, and knowledge checks reviewed"]],'A completed self-check')+
+  col('test','03','Test it','A peer reviewer, then the LMS team',[["Keyboard & screen reader","Every control reachable; everything announced"],["Environment","LMS, mobile, and 400% zoom"],["Release","Every gate recorded before sign-off"]],'A release decision')+
+  '</ol><p class="ig-foot">The tool helps. The team makes it accessible.<span>Lastinger Center for Learning</span></p></figure>';
+}
+function ownership(){
+ const rows=[["Written content & scripts","SME, with ID","Plain language, logical structure, scripts that narrate visuals"],["Text & simple Rise blocks","Instructional designer","Headings, links, instructions, feedback"],["Static visuals","Graphic designer","Alt text, contrast, no color-only meaning, inclusive images"],["Video, audio & animation","Video producer","Captions, transcripts, audio description"],["Storyline interactions","Interactive media designer","Focus order, keyboard use, labels, layers"],["Peer testing","Peer reviewer","Keyboard, screen reader, zoom, high-risk checks"],["Hosting environment","LMS team","LMS, login, and mobile testing"]];
+ return '<figure class="fig" aria-labelledby="owncap"><div class="own-head" aria-hidden="true"><span>Content</span><span></span><span>Owner</span><span>Owns these tasks</span></div><ul class="own">'+rows.map(r=>'<li><span class="what">'+r[0]+'</span><span class="arr" aria-hidden="true"></span><span class="who"><span class="visually-hidden">Owned by </span>'+r[1]+'</span><span class="tasks">'+r[2]+'</span></li>').join('')+'</ul><figcaption id="owncap">Accessibility is a team effort, and every piece of content has a clear owner. If you spot a problem you can\u2019t fix where you are, pass it along to the person who owns the source file.</figcaption></figure>';
+}
+function altTree(){
+ return '<figure class="fig" aria-labelledby="altcap"><ol class="tree">'+
+ '<li><div class="q">Does the image contain text?</div><div class="br"><div class="yes"><span class="lbl">Yes</span>Use real text instead. If you can\u2019t, the alt text repeats the words.</div><div class="no"><span class="lbl">No</span>Go to question 2.</div></div></li>'+
+ '<li><div class="q">Is the image a link or a button?</div><div class="br"><div class="yes"><span class="lbl">Yes</span>Describe where it goes or what it does: \u201cDownload the syllabus.\u201d</div><div class="no"><span class="lbl">No</span>Go to question 3.</div></div></li>'+
+ '<li><div class="q">Does it add information the surrounding text doesn\u2019t?</div><div class="br"><div class="yes"><span class="lbl">Yes</span>Write one or two sentences on its purpose. For charts and diagrams, add a full description nearby.</div><div class="no"><span class="lbl">No</span>Go to question 4.</div></div></li>'+
+ '<li><div class="q">Then it\u2019s decorative.</div><div class="end">Hide it. Rise: leave alt text empty. Storyline: turn off the timeline accessibility toggle.</div></li>'+
+ '</ol><figcaption id="altcap">Alt text decision tree. Adapted from the W3C alt text decision tree.</figcaption></figure>';
+}
+function contrast(){
+ const S=[["#002657","#FFFFFF","Navy on white","14.8:1","pass"],["#0021A5","#FFFFFF","UF Blue on white","11.9:1","pass"],["#4D8141","#FFFFFF","Moss Green on white","4.6:1","pass"],["#0573E1","#FFFFFF","Cobalt on white","4.6:1","pass"],["#002657","#FFC40D","Navy on Sunshine Yellow","9.3:1","pass"],["#FA4616","#FFFFFF","UF Orange on white","3.5:1","large"],["#FFFFFF","#FA4616","White on UF Orange","3.5:1","large"],["#FFC40D","#FFFFFF","Yellow on white","1.6:1","fail"]];
+ const V={pass:'<span class="tag ok">Passes for all text</span>',large:'<span class="tag cau">Large text & graphics only</span>',fail:'<span class="tag fail">Fails: don\u2019t use for text</span>'};
+ return '<figure class="fig" aria-labelledby="concap"><div class="swatches">'+S.map(s=>'<div class="sw"><div class="spec" style="background:'+s[1]+';color:'+s[0]+'"><b>Aa 18pt</b><small>Body text sample</small></div><div class="meta"><span>'+s[2]+'<br><strong>'+s[3]+'</strong></span>'+V[s[4]]+'</div></div>').join('')+'</div><figcaption id="concap">Lastinger brand colors, tested. Text needs 4.5:1; large text (18 pt, or 14 pt bold), icons, and buttons need 3:1. UF Orange works for headings, borders, and icons, but not body text.</figcaption></figure>';
+}
+function focusDiagram(){
+ const slide=(x,nums,good)=>{
+  const cls=good?['svg-num-good','svg-nt-good']:['svg-num-bad','svg-nt-bad'];
+  const objs=[[x+20,48,260,34,'Slide title'],[x+20,96,120,96,'Image'],[x+152,96,128,96,'Paragraph'],[x+20,206,120,32,'Back'],[x+160,206,120,32,'Next']];
+  return '<rect x="'+x+'" y="30" width="300" height="225" rx="10" class="svg-box"/>'+objs.map((o,i)=>'<rect x="'+o[0]+'" y="'+o[1]+'" width="'+o[2]+'" height="'+o[3]+'" rx="6" class="svg-fill"/><text x="'+(o[0]+10)+'" y="'+(o[1]+22)+'" class="svg-sub">'+o[4]+'</text><circle cx="'+(o[0]+o[2]-14)+'" cy="'+(o[1]+15)+'" r="12" class="'+cls[0]+'"/><text x="'+(o[0]+o[2]-14)+'" y="'+(o[1]+20)+'" text-anchor="middle" class="'+cls[1]+'">'+nums[i]+'</text>').join('');
+ };
+ return '<figure class="fig" aria-labelledby="fotitle"><svg viewBox="0 0 660 290" role="img" aria-labelledby="fotitle fodesc"><title id="fotitle">Default focus order compared with a set focus order</title><desc id="fodesc">Left: a slide read in creation order: Next, Slide title, Back, Image, Paragraph. Right: the same slide after setting focus order: Slide title, Image, Paragraph, Back, Next.</desc>'+
+  '<text x="10" y="20" class="svg-txt">Default: creation order</text><text x="350" y="20" class="svg-txt">Set: reading order</text>'+
+  slide(10,[2,4,5,3,1],false)+slide(350,[1,2,3,4,5],true)+
+  '<text x="10" y="280" class="svg-sub">Read as: Next, Slide title, Back, Image\u2026</text><text x="350" y="280" class="svg-sub">Read as: Slide title, Image, Paragraph, Back, Next</text></svg>'+
+  '<figcaption>A Storyline slide is a canvas: screen readers follow the order objects were created unless you set it. Open the Focus Order window and arrange objects top to bottom, left to right.</figcaption></figure>';
+}
+function layerLoop(){
+ return '<figure class="fig" aria-labelledby="loopcap"><ol class="loop"><li><b>Learner selects a button</b>e.g., \u201cShow example\u201d</li><li><b>Focus moves into the layer</b>A Set Focus trigger targets the layer\u2019s heading.</li><li><b>Base layer is blocked</b>Learners can\u2019t reach content behind the layer.</li><li><b>Learner closes the layer</b>Close button or <kbd>Esc</kbd>.</li></ol><div class="return" aria-hidden="true"><span>Focus returns to the button</span></div><figcaption id="loopcap">The focus loop for layers and lightboxes. Step 5: focus returns to the button that opened the layer, so the learner doesn\u2019t lose their place.</figcaption></figure>';
+}
+function pipeline(){
+ return '<ol class="pipe">'+GATES.map((g,i)=>'<li'+(i===GATES.length-1?' class="final"':'')+'><div class="box"><b>'+g[0]+'</b><span>'+g[1]+'</span></div></li>').join('')+'</ol>';
+}
+
+function guideMap(){
+ const col=(t,sub,items)=>'<div class="gcol"><h3>'+t+'<span>'+sub+'</span></h3><ul>'+items.map(i=>'<li><a href="#/'+i[0]+'"'+(i[3]?' style="--c:'+i[3]+'"':'')+'><b>'+i[1]+'</b><span>'+i[2]+'</span></a></li>').join('')+'</ul></div>';
+ return '<figure class="fig" aria-labelledby="mapcap"><div class="gmap">'+
+  col('Workflow','The heart of the guide, in order',[['build','01 Build it','The foundations every course needs, in either tool.','#0021A5'],['check','02 Check it','Your 10-minute self-check before handing off.','#4D8141'],['test','03 Test it','How a fresh pair of eyes tests the module, then the LMS.','#FA4616']])+
+  col('By tool','Steps for the tool you\u2019re using',[['rise','Rise 360 guide','What Rise does for you, and what\u2019s left to add.'],['storyline','Storyline 360 guide','Focus order, layers, and controls.'],['media','Video, audio & animation','Captions, transcripts, and described visuals.']])+
+  col('Quick help','For when you\u2019re in the middle of work',[['risks','High-risk interactions','Check before you storyboard a tricky one.'],['fix','Find a fix','Search common problems and their fixes.'],['quick','Quick reference','One printable page of the essentials.']])+
+  col('Learn','Background and sources',[['learn','Basics & vocabulary','The POUR principles, flashcards, and terms.'],['resources','Resources & sources','Standards, Articulate docs, and what we verified.']])+
+  '</div><figcaption id="mapcap">The guide follows the way a course gets made: build it, check it, test it. The tool guides add detail for Rise and Storyline, and the quick-help pages are there whenever you get stuck. Every page is also in the menu on the left.</figcaption></figure>';
+}
+/* ---------------- Pages ---------------- */
+const TITLES={home:'Home',start:'Start here',build:'Build it',check:'Check it',test:'Test it',rise:'Rise 360 guide',storyline:'Storyline 360 guide',media:'Video, audio & animation',risks:'High-risk interactions',fix:'Find a fix',quick:'Quick reference',learn:'Basics & vocabulary',resources:'Resources & sources'};
+const task=(r,k,t,d,c)=>'<a class="task" href="#/'+r+'" style="border-top-color:'+(c||'var(--blue)')+'"><span class="k">'+k+'</span><b>'+t+'</b><span class="d">'+d+'</span></a>';
+const riskCards=f=>RISKS.filter(r=>f==='all'||r.tool===f||r.tool==='Both').map(r=>'<details class="risk" data-lv="'+r.lv+'"><summary><div class="row"><h4>'+esc(r.n)+'</h4>'+LV[r.lv]+'</div><span class="tool">'+(r.tool==='Both'?'Rise and Storyline':r.tool+' 360')+'</span><p>'+esc(r.risk)+'</p><span class="more">What to do</span></summary><dl><dt>Author action</dt><dd>'+esc(r.act)+'</dd><dt>Reviewer check</dt><dd>'+esc(r.chk)+'</dd></dl></details>').join('');
+
+const PAGES={
+ home:()=>page('For Rise 360 and Storyline 360','Accessibility Toolkit for Course Development','Welcome! Whether you\u2019re writing a script, building a Rise lesson, or testing a finished module, you\u2019ll find what you need here. Jump to whatever fits your work today. There\u2019s no need to read it all at once.')+infographic()+
+  '<h2>What do you need to do?</h2><div class="grid g3">'+
+  task('rise','Tool guide','Build in Rise 360','Blocks, headings, media, and interactions.')+
+  task('storyline','Tool guide','Build in Storyline 360','Focus order, layers, controls, and feedback.')+
+  task('check','Checklist','Review my module','Run the author self-check before QA.','#4D8141')+
+  task('test','Testing','Test a module','Keyboard, screen reader, zoom, and LMS.','#FA4616')+
+  task('fix','Troubleshooting','Solve a problem','Most issues are common, and most have a quick fix.')+
+  task('start','Orientation','New to accessibility?','Start with the big picture and find your role.')+'</div>',
+ start:()=>page('Orientation','Start here','')+
+  '<p class="lede">Our goal is simple: every learner should be able to take part in every course. We aim for <strong>WCAG 2.1/2.2 Level AA</strong>, the level US public institutions must meet under the ADA Title II web accessibility rule.</p><p class="lede">Rise and Storyline give you a strong foundation, but the choices you make as an author, like the alt text you write and the reading order you set, are what make a course truly accessible. The good news is that these choices help everyone, from learners in a noisy room to those working in a second language.</p>'+
+  '<h2>How this guide is organized</h2>'+guideMap()+
+  '<h2>How to read the tags</h2><ul class="rules"><li><span>'+tag('req')+'</span><div><b>The must-haves, based on WCAG 2.1/2.2 AA.</b><span class="how">Each one lists its WCAG criterion in brackets. All of them need to be in place before a course goes live.</span></div></li><li><span>'+tag('rec')+'</span><div><b>Good habits that go beyond the minimum.</b><span class="how">Make these part of your usual practice. If one doesn\u2019t fit your course, jot down why.</span></div></li><li><span>'+tag('cau')+'</span><div><b>Spots where the tool needs a little help.</b><span class="how">Follow the workaround, or choose a different interaction.</span></div></li><li><span>'+tag('gate')+'</span><div><b>Checkpoints along the way, like a test or a sign-off.</b><span class="how">Complete each one and note it before the course moves to the next stage.</span></div></li></ul>'+
+  '<h2>Who owns what</h2>'+ownership()+
+  '<h2>What\u2019s my part?</h2><div class="search"><label for="role">Choose your role</label><select id="role" class="btn">'+Object.keys(ROLES).map(r=>'<option>'+esc(r)+'</option>').join('')+'</select></div><div id="rolecard" class="banner" aria-live="polite"></div>',
+ build:()=>page('Step 01','Build it','These are the foundations for every course, whichever tool you\u2019re using. Once they\u2019re in place, the Rise and Storyline guides add the tool-specific steps.')+rulesList(BUILD.core)+'<h2>Writing alt text</h2>'+altTree()+'<h2>Brand colors and contrast</h2>'+contrast(),
+ rise:()=>page('Tool guide','Rise 360 guide','Good news: Rise does a lot of the accessibility work for you, including clean page structure, a skip-navigation link, keyboard controls, and zoom up to 400%. Here\u2019s what\u2019s left for you to add.')+'<div class="banner">Don\u2019t forget the <a href="#/build">Build it foundations</a>. They apply to every Rise course, too.</div>'+rulesList(BUILD.rise)+'<h2>Blocks that need extra care</h2><div class="risks">'+riskCards('Rise')+'</div>',
+ storyline:()=>page('Tool guide','Storyline 360 guide','Storyline gives you lots of creative freedom, so it asks for a bit more care. Think of each slide as a blank canvas: a screen reader won\u2019t know what order to read things in until you tell it.')+'<div class="banner">Don\u2019t forget the <a href="#/build">Build it foundations</a>. They apply to every Storyline course, too.</div>'+rulesList(BUILD.sl)+'<h2>Focus order</h2>'+focusDiagram()+'<h2>Layers and lightboxes</h2>'+layerLoop()+'<h2>Interactions that need extra care</h2><div class="risks">'+riskCards('Storyline')+'</div>',
+ media:()=>page('Tool guide','Video, audio & animation','Captions and transcripts reach more learners than you might expect: people who are d/Deaf or hard of hearing, second-language learners, anyone in a noisy room, and those who simply prefer to read.')+rulesList(BUILD.media)+
+  '<h2>Caption and transcript style</h2><div class="grid g2"><div class="fix"><h4>Captions</h4><ul><li>Name speakers and important sounds in square brackets: [Narrator], [music fades].</li><li>Keep each caption to two short lines in a plain sans serif font.</li><li>Keep captions clear of important on-screen content.</li><li>Proofread every AI-generated caption against the audio.</li></ul></div><div class="fix"><h4>Transcripts</h4><ul><li>Place them right next to the media.</li><li>Include important visual context, not only speech.</li><li>Use an accessible format: web text, an accordion, or a tagged document.</li><li>Add headings or timestamps only when they help navigation.</li></ul></div></div><p class="sc" style="margin-top:.8rem">Adapted from Natachu (2025), <em>Design for All Learners</em>, ATD Press, and W3C media guidance.</p>',
+ risks:()=>page('Quick help','High-risk interactions','Some interactions need a little extra planning. Deciding on them early, at the storyboard stage, saves rework later. Open any card to see what to do and what a reviewer will check.')+'<div class="seg" role="group" aria-label="Filter by tool"><button aria-pressed="true" data-f="all">All</button><button aria-pressed="false" data-f="Rise">Rise 360</button><button aria-pressed="false" data-f="Storyline">Storyline 360</button></div><div class="risks" id="risklist">'+riskCards('all')+'</div>',
+ check:()=>page('Step 02','Check it','A quick self-check before you hand off your module. It takes about 10 minutes, and catching things now saves everyone time later. Your progress is saved in this browser, so you can pick up where you left off.')+'<div class="seg" role="group" aria-label="This module was built in"><button aria-pressed="true" data-cl="rise">Rise 360</button><button aria-pressed="false" data-cl="sl">Storyline 360</button></div><div class="progress"><div class="bar" role="progressbar" aria-label="Self-check progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="bar"><div></div></div><span id="count" style="font-weight:700"></span><button class="btn" id="reset">Clear checklist</button></div><ul class="checks" id="checklist"></ul><p class="done" id="done" role="status">Nice work! Your self-check is complete. Next, pass the module to a peer reviewer for the <a href="#/test">Test it</a> steps.</p>',
+ test:()=>page('Step 03','Test it','Fresh eyes catch what we\u2019ve learned to look past. A peer reviewer, a colleague who didn\u2019t build the module, runs the first four tests, and the LMS team runs the last one where learners will actually take the course.')+'<div class="grid g2">'+PROTOS.map(p=>'<article class="proto"><h4>'+p.n+'</h4><p class="who">'+tag('gate')+' '+p.who+'</p><ol>'+p.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol><p class="pass"><b>Pass when:</b> '+p.pass+'</p></article>').join('')+'</div>'+
+  '<h2>Release gates, in order</h2>'+pipeline()+'<h2>Release record</h2><p>For each module, record the version, content owner, reviewer, test environment, findings, fixes, retest results, any remaining barriers, and who approved release. This record makes the final decision clear and gives you a helpful history if questions come up later.</p>',
+ fix:()=>page('Quick help','Find a fix','Spotted something in QA? Don\u2019t worry. These issues are common, and most have a quick fix. Search below to find yours.')+'<div class="search"><label for="q">Search mistakes</label><input id="q" type="search" placeholder="Try: alt text, focus, color"><span id="fixcount" role="status" class="sc"></span></div><div class="grid g2" id="fixes"></div>',
+ quick:()=>page('Quick help','Quick reference','Everything essential on one page. Print a copy to keep by your desk (Ctrl+P, or Cmd+P on Mac).')+
+  '<div class="qr"><div class="qr-cols">'+
+  '<div class="qr-col" style="--c:#0021A5"><h3>Build it</h3><ul><li>Real headings, in order</li><li>Alt text states purpose; decorative hidden</li><li>Links and buttons say where they go</li><li>Text 4.5:1, icons 3:1; never color alone</li><li>Captions, transcripts, described visuals</li><li>Keyboard-ready interactions; no drag-and-drop only</li><li>Storyline: focus order on every slide and layer</li></ul></div>'+
+  '<div class="qr-col" style="--c:#4D8141"><h3>Check it</h3><ul><li>Course language set</li><li>No auto-advance or timers</li><li>One full keyboard pass</li><li>Rise: lesson headers on, H2\u2013H5 set</li><li>Storyline: layers move and return focus</li><li>Storyline: Accessibility Checker clean</li></ul></div>'+
+  '<div class="qr-col" style="--c:#FA4616"><h3>Test it</h3><ul><li>Keyboard only: visible focus, no traps</li><li>Screen reader: NVDA or VoiceOver</li><li>Zoom to 400%: nothing clipped</li><li>High-risk interactions checked</li><li>LMS staging and two mobile devices</li><li>Release record signed</li></ul></div>'+
+  '</div><div class="qr-strip"><span><b>Keys:</b> <kbd>Tab</kbd> <kbd>Shift</kbd>+<kbd>Tab</kbd> <kbd>Enter</kbd> <kbd>Space</kbd> <kbd>Esc</kbd> arrows</span><span><b>Contrast:</b> 4.5:1 text \u00b7 3:1 large text, icons, buttons</span><span><b>Standard:</b> WCAG 2.1/2.2 AA</span></div></div>',
+ learn:()=>page('Learn','Basics & vocabulary','New to the vocabulary? You\u2019re in good company. Every WCAG requirement falls under one of four principles, known as POUR.')+
+  '<div class="pour"><div><span class="big" aria-hidden="true">P</span><b>Perceivable</b><span>Learners can detect content by sight, sound, or touch.</span></div><div><span class="big" aria-hidden="true">O</span><b>Operable</b><span>Every control works with any input method.</span></div><div><span class="big" aria-hidden="true">U</span><b>Understandable</b><span>Content is clear; the interface behaves predictably.</span></div><div><span class="big" aria-hidden="true">R</span><b>Robust</b><span>Content works with current and future assistive technology.</span></div></div>'+
+  '<h2>Practice with flashcards</h2><div class="flash"><button class="card" id="card" aria-pressed="false"></button><div class="flashnav"><button class="btn" id="prev">Previous card</button><span id="cardpos" aria-live="polite"></span><button class="btn" id="next">Next card</button></div></div><h2>All terms</h2><dl class="gloss">'+G.map(g=>'<div><dt>'+esc(g[0])+'</dt><dd>'+esc(g[1])+'</dd></div>').join('')+'</dl>',
+ resources:()=>page('Learn','Resources & sources','Want to go deeper? Here are the sources this guide relies on: the standards for what\u2019s required, Articulate\u2019s documentation for how the tools behave today, and real testing for the learner\u2019s experience.')+
+  '<h2>Authoritative resources</h2><ul><li><a href="https://www.w3.org/TR/WCAG22/">WCAG 2.2 standard</a> (W3C)</li><li><a href="https://www.w3.org/WAI/WCAG22/Understanding/">Understanding WCAG 2.2</a> (W3C)</li><li><a href="https://www.w3.org/WAI/tutorials/images/decision-tree/">Alt text decision tree</a> (W3C)</li><li><a href="https://www.w3.org/WAI/media/av/">Making audio and video media accessible</a> (W3C)</li><li><a href="https://www.articulate.com/about/accessibility/rise-360-accessibility-conformance-report-vpat/">Rise 360 accessibility conformance report</a> (Articulate)</li><li><a href="https://www.articulate.com/about/accessibility/storyline-360-accessibility-conformance-report-vpat/">Storyline 360 accessibility conformance report</a> (Articulate)</li></ul>'+
+  '<h2>Tool claims and verification</h2><p>Articulate updates its tools often. Each tool-specific claim on this site is checked against these sources. Last verified October 2026.</p><div class="tablewrap"><table><thead><tr><th scope="col">Claim</th><th scope="col">Status</th><th scope="col">Source</th></tr></thead><tbody>'+SRC.map(s=>'<tr><td>'+esc(s[0])+'</td><td>'+esc(s[1])+'</td><td>'+(s[3]?'<a href="'+s[3]+'">'+esc(s[2])+'</a>':s[2])+'</td></tr>').join('')+'</tbody></table></div>'
+};
+
+/* ---------------- Page behaviors ---------------- */
+let ticks={};try{ticks=JSON.parse(localStorage.getItem('a11y-ticks')||'{}')||{}}catch(e){ticks={}}
+const saveTicks=()=>{try{localStorage.setItem('a11y-ticks',JSON.stringify(ticks))}catch(e){}};
+function seg(sel,fn){const b=[...document.querySelectorAll(sel)];b.forEach(x=>x.addEventListener('click',()=>{b.forEach(y=>y.setAttribute('aria-pressed','false'));x.setAttribute('aria-pressed','true');fn(Object.values(x.dataset)[0])}))}
+const INIT={
+ start(){const sel=document.getElementById('role'),card=document.getElementById('rolecard');sel.value='Instructional designer';
+  const show=()=>{const d=ROLES[sel.value];card.innerHTML='<p><b>'+esc(sel.value)+': here\u2019s where to focus first</b></p><ol>'+d.do.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol><p style="margin:0">Helpful next stops: '+d.go.map(g=>'<a href="#/'+g[0]+'">'+g[1]+'</a>').join(' \u00b7 ')+'</p>'};sel.onchange=show;show()},
+ risks(){seg('[data-f]',f=>document.getElementById('risklist').innerHTML=riskCards(f))},
+ check(){let tool='rise';
+  const render=()=>{const items=CL.map((c,i)=>({c,i})).filter(o=>o.c[0]==='both'||o.c[0]===tool);
+   document.getElementById('checklist').innerHTML=items.map(o=>'<li><label><input type="checkbox" data-i="'+o.i+'"'+(ticks[tool+o.i]?' checked':'')+'><span>'+esc(o.c[2])+'</span><span>'+tag(o.c[1])+'</span></label></li>').join('');
+   document.querySelectorAll('#checklist input').forEach(cb=>cb.onchange=()=>{ticks[tool+cb.dataset.i]=cb.checked;saveTicks();upd()});upd()};
+  const upd=()=>{const all=[...document.querySelectorAll('#checklist input')],n=all.filter(c=>c.checked).length,p=all.length?Math.round(n/all.length*100):0,bar=document.getElementById('bar');bar.firstElementChild.style.width=p+'%';bar.setAttribute('aria-valuenow',p);document.getElementById('count').textContent=n+' of '+all.length+' done';document.getElementById('done').classList.toggle('show',n===all.length&&n>0)};
+  document.getElementById('reset').onclick=()=>{Object.keys(ticks).forEach(k=>{if(k.startsWith(tool))delete ticks[k]});saveTicks();render()};
+  seg('[data-cl]',k=>{tool=k;render()});render()},
+ fix(){const q=document.getElementById('q');const r=()=>{const v=q.value.trim().toLowerCase(),h=FIX.filter(f=>!v||f.join(' ').toLowerCase().includes(v));
+   document.getElementById('fixes').innerHTML=h.length?h.map(f=>'<article class="fix"><h4>'+esc(f[0])+'</h4><p class="why">'+esc(f[1])+'</p><p class="do"><b>Fix:</b> '+esc(f[2])+'</p></article>').join(''):'<p>Nothing matched that search yet. Try a broader word, like \u201cfocus\u201d or \u201cimage.\u201d</p>';
+   document.getElementById('fixcount').textContent=h.length+' of '+FIX.length+' shown'};q.oninput=r;r()},
+ learn(){let i=0;const c=document.getElementById('card');
+  const s=()=>{const f=c.getAttribute('aria-pressed')==='true';c.innerHTML=f?'<span><span>'+esc(G[i][1])+'</span><span class="hint">Select to see the term</span></span>':'<span><span class="flash-term">'+esc(G[i][0])+'</span><span class="hint">Select to see the definition</span></span>';c.setAttribute('aria-label',f?'Definition of '+G[i][0]+': '+G[i][1]:'Term: '+G[i][0]+'. Select to show definition.');document.getElementById('cardpos').textContent='Card '+(i+1)+' of '+G.length};
+  c.onclick=()=>{c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')==='true'?'false':'true');s()};
+  document.getElementById('next').onclick=()=>{i=(i+1)%G.length;c.setAttribute('aria-pressed','false');s()};
+  document.getElementById('prev').onclick=()=>{i=(i-1+G.length)%G.length;c.setAttribute('aria-pressed','false');s()};s()}
+};
+
+/* ---------------- Router ---------------- */
+const main=document.getElementById('main'),aside=document.getElementById('sidebar'),menuBtn=document.getElementById('menuBtn');
+let first=true;
+function route(){
+ if(location.hash&&!location.hash.startsWith('#/'))return;
+ const key=(location.hash.replace(/^#\/?/,'').split('/')[0])||'home';
+ const r=PAGES[key]?key:'home';
+ main.innerHTML=PAGES[r]();
+ if(INIT[r])INIT[r]();
+ document.title=(r==='home'?'':TITLES[r]+' | ')+'Accessibility Toolkit for Course Development | Lastinger Center';
+ document.querySelectorAll('aside a').forEach(a=>{const h=a.getAttribute('href').replace(/^#\/?/,'')||'home';if(h===r)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+ aside.classList.remove('open');menuBtn.setAttribute('aria-expanded','false');
+ if(!first){window.scrollTo(0,0);const h=document.getElementById('pagetitle');if(h)h.focus()}
+ first=false;
+}
+menuBtn.onclick=()=>{const o=aside.classList.toggle('open');menuBtn.setAttribute('aria-expanded',o)};
+window.addEventListener('hashchange',route);
+route();
+</script>
+</body>
+</html>
